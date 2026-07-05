@@ -2,7 +2,10 @@ package com.banking.auth.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +36,26 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler({DisabledException.class, LockedException.class})
+    public ResponseEntity<ApiException> handleAccountStatus(Exception ex) {
+        ApiException error = new ApiException(
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiException> handleNotReadable(HttpMessageNotReadableException ex) {
+        ApiException error = new ApiException(
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid or missing request body",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

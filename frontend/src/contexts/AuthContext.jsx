@@ -21,7 +21,8 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const { data } = await authApi.login(credentials)
-    const payload = data.data
+    // auth-service returns AuthResponse directly (not wrapped in ApiResponse)
+    const payload = data.data ?? data
     localStorage.setItem('accessToken', payload.accessToken)
     localStorage.setItem('user', JSON.stringify(payload))
     setUser(payload)
@@ -30,7 +31,8 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (formData) => {
     const { data } = await authApi.register(formData)
-    const payload = data.data
+    // auth-service returns AuthResponse directly (not wrapped in ApiResponse)
+    const payload = data.data ?? data
     localStorage.setItem('accessToken', payload.accessToken)
     localStorage.setItem('user', JSON.stringify(payload))
     setUser(payload)
