@@ -10,48 +10,39 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "http://localhost:5173"   # Vite dev server
-              - "http://localhost:3000"   # Alternative React port
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
+              - "http://localhost:5173"   # Vite local dev
+              - "http://localhost:80"     # Docker frontend
+              - "http://localhost"        # Docker frontend (no port)
+            allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
             allowedHeaders: "*"
             allowCredentials: true
             maxAge: 3600
       routes:
-        # Auth Service — public (no JWT filter on /auth/**)
         - id: auth-service
-          uri: http://localhost:8081
+          uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
           predicates:
             - Path=/api/auth/**
           filters:
             - StripPrefix=0
 
-        # Account Service — protected
         - id: account-service
-          uri: http://localhost:8082
+          uri: http://${ACCOUNT_SERVICE_HOST:localhost}:${ACCOUNT_SERVICE_PORT:8082}
           predicates:
             - Path=/api/accounts/**
           filters:
             - StripPrefix=0
             - AuthFilter
 
-        # Transaction Service — protected
         - id: transaction-service
-          uri: http://localhost:8083
+          uri: http://${TRANSACTION_SERVICE_HOST:localhost}:${TRANSACTION_SERVICE_PORT:8083}
           predicates:
             - Path=/api/transactions/**
           filters:
             - StripPrefix=0
             - AuthFilter
 
-        # Notification Service — protected (user-facing endpoints)
         - id: notification-service
-          uri: http://localhost:8084
+          uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:${NOTIFICATION_SERVICE_PORT:8084}
           predicates:
             - Path=/api/notifications/**
           filters:
@@ -59,9 +50,9 @@ spring:
             - AuthFilter
 
 jwt:
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
 logging:
   level:
-    com.banking: DEBUG
-    org.springframework.cloud.gateway: DEBUG
+    com.banking: INFO
+    org.springframework.cloud.gateway: INFO
