@@ -49,7 +49,7 @@ public class AuthService {
         log.info("Registered new user: {}", user.getUsername());
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-        String accessToken = jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails, user.getId());
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return AuthResponse.builder()
@@ -72,7 +72,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-        String accessToken = jwtService.generateToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails, user.getId());
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         log.info("User logged in: {}", user.getUsername());
@@ -99,7 +99,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String newAccessToken = jwtService.generateToken(userDetails);
+        String newAccessToken = jwtService.generateToken(userDetails, user.getId());
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
