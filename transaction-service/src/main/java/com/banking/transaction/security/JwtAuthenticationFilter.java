@@ -27,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -40,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username != null && !jwtService.isTokenExpired(jwt)
                     && SecurityContextHolder.getContext().getAuthentication() == null) {
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         username,
                         null,
@@ -47,10 +49,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+
+            // Store token in thread-local so RestTemplate interceptor can forward it
+            // to downstream services (e.g. account-service)
+            JwtContext.setToken(jwt);
+
         } catch (Exception e) {
-            // Invalid token — leave unauthenticated
+            // Invalid token — leave unauthenticated, don't store
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // Always clean up thread-local to prevent leaks in thread-pool environments
+            JwtContext.clear();
+        }
     }
 }
