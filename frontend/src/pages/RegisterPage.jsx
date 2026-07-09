@@ -21,22 +21,30 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const required = ['firstName', 'lastName', 'username', 'email', 'password']
-    if (required.some((k) => !form[k])) {
+    const required = ['firstName', 'lastName', 'username', 'email', 'password', 'confirmPassword']
+    const trimmedForm = Object.fromEntries(
+      Object.entries(form).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value]),
+    )
+
+    if (required.some((k) => !trimmedForm[k])) {
       toast.error('Please fill in all required fields')
       return
     }
-    if (form.password !== form.confirmPassword) {
+    if (trimmedForm.firstName.length < 1 || trimmedForm.lastName.length < 1) {
+      toast.error('First name and last name must contain at least 1 character')
+      return
+    }
+    if (trimmedForm.password !== trimmedForm.confirmPassword) {
       toast.error('Passwords do not match')
       return
     }
-    if (form.password.length < 6) {
+    if (trimmedForm.password.length < 6) {
       toast.error('Password must be at least 6 characters')
       return
     }
     setLoading(true)
     try {
-      const { confirmPassword, ...payload } = form
+      const { confirmPassword, ...payload } = trimmedForm
       await register(payload)
       toast.success('Account created successfully!')
     } catch (err) {
