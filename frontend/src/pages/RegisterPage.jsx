@@ -54,24 +54,6 @@ export default function RegisterPage() {
     }
   }
 
-  const Field = ({ name, label, type = 'text', required = false, placeholder = '' }) => (
-    <div>
-      <label className="label" htmlFor={name}>
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        className="input"
-        placeholder={placeholder}
-        value={form[name]}
-        onChange={handleChange}
-        disabled={loading}
-      />
-    </div>
-  )
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-900 to-brand-700 px-4 py-8">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
@@ -85,12 +67,88 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field name="firstName" label="First name" required placeholder="John" />
-            <Field name="lastName"  label="Last name"  required placeholder="Doe" />
+            <div>
+              <label className="label" htmlFor="firstName">
+                First name<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
+                className="input"
+                placeholder="John"
+                value={form.firstName}
+                onChange={handleChange}
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="lastName">
+                Last name<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                className="input"
+                placeholder="Doe"
+                value={form.lastName}
+                onChange={handleChange}
+                disabled={loading}
+              />
+            </div>
           </div>
-          <Field name="username" label="Username" required placeholder="johndoe" />
-          <Field name="email" label="Email" type="email" required placeholder="john@example.com" />
-          <Field name="phoneNumber" label="Phone number" placeholder="+1 555 0100" />
+
+          <div>
+            <label className="label" htmlFor="username">
+              Username<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              className="input"
+              placeholder="johndoe"
+              value={form.username}
+              onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="label" htmlFor="email">
+              Email<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              className="input"
+              placeholder="john@example.com"
+              value={form.email}
+              onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="label" htmlFor="phoneNumber">Phone number</label>
+            <input
+              id="phoneNumber"
+              name="phoneNumber"
+              type="tel"
+              autoComplete="tel"
+              className="input"
+              placeholder="+1 555 0100"
+              value={form.phoneNumber}
+              onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
 
           <div>
             <label className="label" htmlFor="password">
@@ -101,6 +159,7 @@ export default function RegisterPage() {
                 id="password"
                 name="password"
                 type={showPw ? 'text' : 'password'}
+                autoComplete="new-password"
                 className="input pr-10"
                 placeholder="Min. 6 characters"
                 value={form.password}
@@ -126,6 +185,7 @@ export default function RegisterPage() {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
+              autoComplete="new-password"
               className="input"
               placeholder="Repeat your password"
               value={form.confirmPassword}
