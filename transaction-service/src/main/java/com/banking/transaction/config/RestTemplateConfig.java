@@ -7,7 +7,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory());
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
         // Interceptor: attach the JWT from the current thread to every outgoing request
         ClientHttpRequestInterceptor jwtForwardingInterceptor = new ClientHttpRequestInterceptor() {
