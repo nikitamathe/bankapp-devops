@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
@@ -178,9 +179,26 @@ public class TransactionService {
     }
 
     public Page<TransactionResponse> getTransactionsByAccount(String accountNumber, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return transactionRepository.findByAccountNumber(accountNumber, pageable)
-                .map(this::mapToResponse);
+        List<Transaction> allTransactions = transactionRepository.findByAccountNumber(accountNumber, Pageable.unpaged())
+                .getContent()
+                .stream()
+                .sorted(Comparator.comparing(Transaction::getCreatedAt))
+                .toList();
+
+        int start = Math.min(page * size, allTransactions.size());
+        int end = Math.min(start + size, allTransactions.size());
+        List<Transaction> pageTransactions = allTransactions.subList(start, end);
+
+        BigDecimal runningBalance = BigDecimal.ZERO;
+        List<TransactionResponse> responses = new ArrayList<>();
+        for (Transaction txn : pageTransactions) {
+            BigDecimal balanceBefore = runningBalance;
+            BigDecimal signedAmount = calculateSignedAmount(txn, accountNumber);
+            runningBalance = runningBalance.add(signedAmount);
+            responses.add(mapToResponse(txn, balanceBefore, runningBalance, signedAmount));
+        }
+
+        return new PageImpl<>(responses, PageRequest.of(page, size), allTransactions.size());
     }
 
     public TransactionResponse getTransactionByReference(String reference) {
@@ -291,6 +309,11 @@ public class TransactionService {
     }
 
     private TransactionResponse mapToResponse(Transaction txn) {
+        return mapToResponse(txn, txn.getBalanceBefore(), txn.getBalanceAfter(), txn.getAmount());
+    }
+
+    private TransactionResponse mapToResponse(Transaction txn, BigDecimal balanceBefore, BigDecimal balanceAfter,
+                                              BigDecimal amount) {
         return TransactionResponse.builder()
                 .id(txn.getId())
                 .transactionReference(txn.getTransactionReference())
@@ -298,13 +321,26 @@ public class TransactionService {
                 .fromAccountNumber(txn.getFromAccountNumber())
                 .toAccountNumber(txn.getToAccountNumber())
                 .transactionType(txn.getTransactionType().name())
-                .amount(txn.getAmount())
-                .balanceBefore(txn.getBalanceBefore())
-                .balanceAfter(txn.getBalanceAfter())
+                .amount(amount)
+                .balanceBefore(balanceBefore)
+                .balanceAfter(balanceAfter)
                 .status(txn.getStatus().name())
                 .description(txn.getDescription())
                 .failureReason(txn.getFailureReason())
                 .createdAt(txn.getCreatedAt())
                 .build();
+    }
+
+    private BigDecimal calculateSignedAmount(Transaction txn, String accountNumber) {
+        return switch (txn.getTransactionType()) {
+            case DEPOSIT -> txn.getAmount();
+            case WITHDRAWAL -> txn.getAmount().negate();
+            case TRANSFER -> {
+                if (accountNumber.equals(txn.getFromAccountNumber())) {
+                    yield txn.getAmount().negate();
+                }
+                yield txn.getAmount();
+            }
+        };
     }
 }
