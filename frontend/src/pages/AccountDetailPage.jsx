@@ -75,6 +75,16 @@ export default function AccountDetailPage() {
 
   const transactions = txnPage?.content ?? []
 
+  const getAmountStyle = (txn) => {
+    const isCredit = txn.transactionType === 'DEPOSIT'
+      || (txn.transactionType === 'TRANSFER' && txn.toAccountNumber === account.accountNumber)
+
+    return {
+      sign: isCredit ? '+' : '-',
+      color: isCredit ? 'text-green-600' : 'text-red-600',
+    }
+  }
+
   if (isLoading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
   if (!account)  return <p className="text-center text-gray-500 py-20">Account not found</p>
 
@@ -156,10 +166,8 @@ export default function AccountDetailPage() {
                   <tr key={txn.id} className="hover:bg-gray-50/50">
                     <td className="py-3 font-mono text-xs text-gray-500">{txn.transactionReference}</td>
                     <td className="py-3"><TransactionTypeBadge type={txn.transactionType} /></td>
-                    <td className={`py-3 font-semibold ${
-                      txn.transactionType === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {txn.transactionType === 'DEPOSIT' ? '+' : '-'}
+                    <td className={`py-3 font-semibold ${getAmountStyle(txn).color}`}>
+                      {getAmountStyle(txn).sign}
                       ${Number(txn.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 text-gray-700">
