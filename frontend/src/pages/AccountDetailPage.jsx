@@ -52,6 +52,7 @@ export default function AccountDetailPage() {
       toast.success(`${modal.charAt(0).toUpperCase() + modal.slice(1)} successful`)
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions', 'account', account?.accountNumber] })
       setModal(null)
       setAmount('')
       setToAccount('')
