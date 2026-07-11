@@ -179,26 +179,13 @@ public class TransactionService {
     }
 
     public Page<TransactionResponse> getTransactionsByAccount(String accountNumber, int page, int size) {
-        List<Transaction> allTransactions = transactionRepository.findByAccountNumber(accountNumber, Pageable.unpaged())
-                .getContent()
+        Page<Transaction> transactionPage = transactionRepository.findByAccountNumber(accountNumber, PageRequest.of(page, size));
+        List<TransactionResponse> responses = transactionPage.getContent()
                 .stream()
-                .sorted(Comparator.comparing(Transaction::getCreatedAt))
+                .map(this::mapToResponse)
                 .toList();
 
-        int start = Math.min(page * size, allTransactions.size());
-        int end = Math.min(start + size, allTransactions.size());
-        List<Transaction> pageTransactions = allTransactions.subList(start, end);
-
-        BigDecimal runningBalance = BigDecimal.ZERO;
-        List<TransactionResponse> responses = new ArrayList<>();
-        for (Transaction txn : pageTransactions) {
-            BigDecimal balanceBefore = runningBalance;
-            BigDecimal signedAmount = calculateSignedAmount(txn, accountNumber);
-            runningBalance = runningBalance.add(signedAmount);
-            responses.add(mapToResponse(txn, balanceBefore, runningBalance, signedAmount));
-        }
-
-        return new PageImpl<>(responses, PageRequest.of(page, size), allTransactions.size());
+        return new PageImpl<>(responses, transactionPage.getPageable(), transactionPage.getTotalElements());
     }
 
     public TransactionResponse getTransactionByReference(String reference) {
