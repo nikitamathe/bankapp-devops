@@ -1,7 +1,7 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-jammy AS builder
 
-RUN apk add --no-cache maven
+RUN apt-get update && apt-get install -y --no-install-recommends maven && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -12,9 +12,9 @@ COPY src ./src
 RUN mvn package -DskipTests -q
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-jammy AS runtime
 
-RUN addgroup -S banking && adduser -S banking -G banking
+RUN groupadd --system banking && useradd --system --gid banking banking
 
 WORKDIR /app
 
