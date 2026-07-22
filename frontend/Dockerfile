@@ -2,7 +2,8 @@
 FROM node:20-alpine AS builder
 
 # Install dependencies needed by some npm packages (node-gyp, etc.)
-RUN apk add --no-cache python3 make g++
+RUN apk upgrade --no-cache && \
+    apk add --no-cache python3 make g++
 
 WORKDIR /app
 
@@ -20,6 +21,10 @@ RUN npm run build
 
 # ── Stage 2: Serve with nginx ─────────────────────────────────────────────────
 FROM nginx:1.27-alpine AS runtime
+
+# Apply the latest Alpine security fixes to the runtime image. This updates
+# c-ares, OpenSSL, expat, libpng, libxml2, musl, nghttp2, and zlib.
+RUN apk upgrade --no-cache
 
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
