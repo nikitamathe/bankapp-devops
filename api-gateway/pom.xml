@@ -23,7 +23,7 @@
         <!-- Pin patched transitive versions until the Spring Boot BOM includes them. -->
         <jackson-bom.version>2.18.8</jackson-bom.version>
         <tomcat.version>10.1.55</tomcat.version>
-        <netty.version>4.1.135.Final</netty.version>
+        <netty.version>4.1.136.Final</netty.version>
         <bouncycastle.version>1.80.2</bouncycastle.version>
     </properties>
 
