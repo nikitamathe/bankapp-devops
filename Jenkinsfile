@@ -28,6 +28,18 @@ pipeline {
                 '''
             }
         }
+        stage('Semgrep Scan') {
+             steps {
+                 sh '''
+                    echo "======================================="
+                    echo "Running Semgrep SAST Scan..."
+                    echo "======================================="
+
+                    semgrep scan --config auto .
+                 '''
+            }
+            
+        }
 
         stage('Login to Docker Hub') {
             steps {
